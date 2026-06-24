@@ -28,6 +28,14 @@ def test_check_dims_present_reports_missing():
     assert "band" in msgs[0]
 
 
+def test_check_dims_present_reports_multiple_missing():
+    da = _da(("y",))
+    msgs = check_dims_present(da, ("y", "x", "band"))
+    assert len(msgs) == 2
+    assert any("x" in m for m in msgs)
+    assert any("band" in m for m in msgs)
+
+
 def test_check_dtype_no_violation():
     da = _da(("y", "x"), dtype=np.float64)
     assert check_dtype(da, np.float64) == []
@@ -50,6 +58,14 @@ def test_check_coords_present_reports_missing():
 def test_check_coords_present_no_violation():
     da = _da(("band",), coords={"band": [1, 2]})
     assert check_coords_present(da, ("band",)) == []
+
+
+def test_check_coords_present_reports_multiple_missing():
+    da = _da(("y", "x", "band"))  # no coords assigned
+    msgs = check_coords_present(da, ("band", "time"))
+    assert len(msgs) == 2
+    assert any("band" in m for m in msgs)
+    assert any("time" in m for m in msgs)
 
 
 def test_raise_if_violations_raises_with_all_messages():
