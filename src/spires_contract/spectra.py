@@ -46,3 +46,27 @@ def validate_solar_angles(da):
             f"unexpected dimension 'band' for solar angles (dims: {tuple(da.dims)})"
         )
     raise_if_violations("solar_angles", violations)
+
+
+def _conform_spectra(da, contract_name):
+    # A missing dimension cannot be repaired by transpose/cast — fail clearly.
+    missing = check_dims_present(da, c.SPECTRA_DIMS)
+    raise_if_violations(contract_name, missing)
+    return da.transpose(*c.SPECTRA_DIMS).astype(c.REQUIRED_DTYPE)
+
+
+def conform_target_spectra(da):
+    """Return target spectra transposed to (y, x, band) and cast to float64."""
+    return _conform_spectra(da, "target_spectra")
+
+
+def conform_background_spectra(da):
+    """Return background spectra transposed to (y, x, band) and cast to float64."""
+    return _conform_spectra(da, "background_spectra")
+
+
+def conform_solar_angles(da):
+    """Return solar angles transposed to (y, x) and cast to float64."""
+    missing = check_dims_present(da, c.SOLAR_ANGLE_DIMS)
+    raise_if_violations("solar_angles", missing)
+    return da.transpose(*c.SOLAR_ANGLE_DIMS).astype(c.REQUIRED_DTYPE)

@@ -70,3 +70,35 @@ def test_validate_solar_angles_rejects_band_dim():
     da = xr.DataArray(np.zeros((3, 4, 5), dtype=np.float64), dims=("y", "x", "band"))
     with pytest.raises(ContractError):
         spectra.validate_solar_angles(da)
+
+
+def test_conform_target_spectra_transposes_to_canonical_order():
+    da = make_target(dims=("band", "y", "x"))
+    out = spectra.conform_target_spectra(da)
+    assert out.dims == ("y", "x", "band")
+
+
+def test_conform_target_spectra_casts_dtype():
+    da = make_target(dtype=np.float32)
+    out = spectra.conform_target_spectra(da)
+    assert out.dtype == np.float64
+
+
+def test_conform_target_spectra_output_passes_validation():
+    da = make_target(dims=("band", "y", "x"), dtype=np.float32)
+    out = spectra.conform_target_spectra(da)
+    spectra.validate_target_spectra(out)  # must not raise
+
+
+def test_conform_solar_angles_transposes_and_casts():
+    da = xr.DataArray(np.zeros((4, 3), dtype=np.float32), dims=("x", "y"))
+    out = spectra.conform_solar_angles(da)
+    assert out.dims == ("y", "x")
+    assert out.dtype == np.float64
+
+
+def test_conform_target_spectra_raises_when_dim_absent():
+    # conform cannot fix a genuinely missing dimension; it should surface that
+    da = make_target(dims=("y", "x"), with_band_coord=False)
+    with pytest.raises(ContractError):
+        spectra.conform_target_spectra(da)
