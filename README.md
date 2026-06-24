@@ -43,22 +43,23 @@ pip install -e .
 
 ## Usage
 
-Each boundary module exposes two kinds of function:
-
-- `validate_*(da)` — raises `ContractError` listing **every** violation at once
-  (wrong dims, missing coordinate, wrong dtype), so a producer gets one
-  actionable error rather than fixing problems one at a time.
-- `conform_*(da)` — returns the array normalized to canonical form (transposed
-  to the canonical dimension order and cast to the required dtype). It repairs
-  order and dtype, but a genuinely missing dimension or coordinate cannot be
-  invented, so `conform_*` raises `ContractError` in that case.
+Each boundary module exposes `validate_*(da)` functions that raise
+`ContractError` listing **every** violation at once — wrong dimension order,
+missing or extra dimension, missing coordinate, wrong dtype — so a producer
+gets one actionable error rather than fixing problems one at a time.
 
 ```python
 import spires_contract.spectra as spectra
 
-spectra.validate_target_spectra(da)        # raises ContractError listing all violations
-da = spectra.conform_target_spectra(da)    # -> canonical (y, x, band), float64
+spectra.validate_target_spectra(da)   # raises ContractError listing all violations
 ```
+
+The contract **validates**; it does not mutate. There are deliberately no
+`conform`/normalize helpers: a contract that silently transposed or cast arrays
+would hide a per-call performance cost (a large-array copy) inside what looks
+like a check. Producers are expected to hand over data already in canonical
+form — including **dimension order**, which is part of the contract because the
+inversion kernel indexes arrays positionally.
 
 ## How to use it from both sides of a boundary
 
@@ -79,15 +80,14 @@ def test_io_output_conforms():
 **Consumer side** (e.g. `spires-inversion` accepting target spectra) — two
 obligations:
 
-1. Accept *anything the contract permits*. Build conforming inputs, certify
-   them with the validator, and assert the consumer handles them — including
-   legal-but-awkward cases such as a transposed dimension order:
+1. Accept *anything the contract permits*. Build a conforming input, certify
+   it with the validator, and assert the consumer handles it:
 
    ```python
    from spires_contract import spectra
 
-   def test_inversion_accepts_any_contract_valid_spectra():
-       da = make_conforming_target(dims=("band", "y", "x"))  # legal, transposed
+   def test_inversion_accepts_contract_valid_spectra():
+       da = make_conforming_target(dims=("y", "x", "band"))  # canonical
        spectra.validate_target_spectra(da)                   # precondition: it IS valid
        result = invert(da, ...)                              # consumer must not choke
    ```
@@ -107,9 +107,9 @@ returns physically sensible output. Those remain each package's own numerical
 and correctness tests. The contract simply removes the entire class of
 shape/dtype/dimension-naming mismatches at the seams.
 
-This package deliberately stays minimal: `validate_*` + `conform_*` only. It
-does not ship shared example-builder fixtures — each package builds its own test
-fixtures and certifies them with the validators above.
+This package deliberately stays minimal: `validate_*` only. It does not ship
+shared example-builder fixtures — each package builds its own test fixtures and
+certifies them with the validators above.
 
 ## Boundaries
 

@@ -47,6 +47,23 @@ def check_no_extra_dims(da, allowed_dims):
     return []
 
 
+def check_dims_order(da, required_dims):
+    """Return a violation if `da.dims` is not exactly `required_dims`, in order.
+
+    Order is part of the contract: the C++ inversion kernel indexes arrays
+    positionally, so `(band, y, x)` is as wrong as a missing dimension. This is
+    a cheap tuple comparison. Only reports an ordering violation when the same
+    set of dims is present — missing/extra dims are left to the dedicated
+    checks so errors don't double up.
+    """
+    if set(da.dims) == set(required_dims) and tuple(da.dims) != tuple(required_dims):
+        return [
+            f"dimensions {tuple(da.dims)} are not in canonical order "
+            f"{tuple(required_dims)}"
+        ]
+    return []
+
+
 def raise_if_violations(contract_name, violations):
     """Raise a single ContractError listing all violations, if any."""
     if violations:

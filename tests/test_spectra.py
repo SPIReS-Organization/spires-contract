@@ -13,7 +13,8 @@ def make_target(dims=("y", "x", "band"), dtype=np.float64, with_band_coord=True)
 
 
 def make_solar(dims=("y", "x"), dtype=np.float64):
-    shape = tuple({"y": 3, "x": 4}[d] for d in dims)
+    sizes = {"y": 3, "x": 4}
+    shape = tuple(sizes[d] for d in dims)
     return xr.DataArray(np.zeros(shape, dtype=dtype), dims=dims)
 
 
@@ -52,10 +53,19 @@ def test_validate_target_spectra_collects_multiple_violations():
     assert "band" in text
 
 
-def test_validate_target_spectra_accepts_any_dim_order():
-    # transposed order is still valid (validator checks presence, not order)
+def test_validate_target_spectra_rejects_wrong_dim_order():
+    # order is part of the contract: a transposed array must be rejected
     da = make_target(dims=("band", "y", "x"))
-    spectra.validate_target_spectra(da)  # must not raise
+    with pytest.raises(ContractError) as exc:
+        spectra.validate_target_spectra(da)
+    assert "canonical order" in str(exc.value)
+
+
+def test_validate_solar_angles_rejects_wrong_dim_order():
+    da = make_solar(dims=("x", "y"))
+    with pytest.raises(ContractError) as exc:
+        spectra.validate_solar_angles(da)
+    assert "canonical order" in str(exc.value)
 
 
 def test_validate_background_spectra_accepts_valid():
@@ -72,54 +82,6 @@ def test_validate_solar_angles_rejects_band_dim():
         spectra.validate_solar_angles(da)
 
 
-def test_conform_target_spectra_transposes_to_canonical_order():
-    da = make_target(dims=("band", "y", "x"))
-    out = spectra.conform_target_spectra(da)
-    assert out.dims == ("y", "x", "band")
-
-
-def test_conform_target_spectra_casts_dtype():
-    da = make_target(dtype=np.float32)
-    out = spectra.conform_target_spectra(da)
-    assert out.dtype == np.float64
-
-
-def test_conform_target_spectra_output_passes_validation():
-    da = make_target(dims=("band", "y", "x"), dtype=np.float32)
-    out = spectra.conform_target_spectra(da)
-    spectra.validate_target_spectra(out)  # must not raise
-
-
-def test_conform_solar_angles_transposes_and_casts():
-    da = xr.DataArray(np.zeros((4, 3), dtype=np.float32), dims=("x", "y"))
-    out = spectra.conform_solar_angles(da)
-    assert out.dims == ("y", "x")
-    assert out.dtype == np.float64
-
-
-def test_conform_target_spectra_raises_when_dim_absent():
-    # conform cannot fix a genuinely missing dimension; it should surface that
-    da = make_target(dims=("y", "x"), with_band_coord=False)
-    with pytest.raises(ContractError):
-        spectra.conform_target_spectra(da)
-
-
-def test_conform_target_spectra_raises_when_band_coord_absent():
-    # all dims present but no band coordinate -> conform must refuse, not return invalid
-    da = make_target(with_band_coord=False)
-    with pytest.raises(ContractError):
-        spectra.conform_target_spectra(da)
-
-
-def test_conform_background_spectra_returns_canonical():
-    # smoke test the background delegation: callable, transposes, casts
-    da = make_target(dims=("band", "y", "x"), dtype=np.float32)
-    out = spectra.conform_background_spectra(da)
-    assert out.dims == ("y", "x", "band")
-    assert out.dtype == np.float64
-    spectra.validate_background_spectra(out)  # must not raise
-
-
 def test_validate_target_spectra_rejects_extra_dim():
     da = make_target(dims=("y", "x", "band"))
     da = da.expand_dims("time")  # now (time, y, x, band)
@@ -133,10 +95,3 @@ def test_validate_solar_angles_rejects_extra_dim():
     with pytest.raises(ContractError) as exc:
         spectra.validate_solar_angles(da)
     assert "time" in str(exc.value)
-
-
-def test_conform_target_spectra_rejects_extra_dim_cleanly():
-    # the bug: extra dim used to crash conform with a raw ValueError instead of ContractError
-    da = make_target(dims=("y", "x", "band")).expand_dims("time")
-    with pytest.raises(ContractError):
-        spectra.conform_target_spectra(da)
