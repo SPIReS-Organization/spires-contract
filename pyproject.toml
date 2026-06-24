@@ -1,10 +1,9 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=61.0", "wheel", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "spires-contract"
-version = "0.1.0"
 description = "Data-interface contracts (xarray schemas + validators) for the SPIReS package family"
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.9"
@@ -15,6 +14,7 @@ dependencies = [
     "numpy",
     "xarray",
 ]
+dynamic = ["version"]  # version derived from git tags via setuptools_scm
 
 [project.optional-dependencies]
 test = ["pytest"]
@@ -25,6 +25,10 @@ Repository = "https://github.com/SPIReS-Organization/spires-contract"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools_scm]
+version_scheme = "post-release"
+local_scheme = "node-and-date"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
