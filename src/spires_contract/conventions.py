@@ -1,6 +1,6 @@
 """Canonical naming and dtype conventions shared across all SPIReS contracts.
 
-Single source of truth so every boundary module (spectra, r0, results) speaks
+Single source of truth so every boundary module (spectra, lut, r0, results) speaks
 the same dimension-name and dtype vocabulary.
 """
 

@@ -7,9 +7,6 @@ interpolator reads coordinate values to locate query points). To be implemented
 when the spires-lut package is built.
 """
 
-from spires_contract._validate import ContractError  # noqa: F401  (re-exported for future use)
-
-
 def validate_lut(da):
     """Validate a reflectance lookup table DataArray. Not yet implemented."""
     raise NotImplementedError(

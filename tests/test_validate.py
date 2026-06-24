@@ -7,6 +7,7 @@ from spires_contract._validate import (
     check_dims_present,
     check_dtype,
     check_coords_present,
+    check_no_extra_dims,
     raise_if_violations,
 )
 
@@ -79,3 +80,15 @@ def test_raise_if_violations_raises_with_all_messages():
 
 def test_raise_if_violations_silent_when_empty():
     raise_if_violations("target_spectra", [])  # must not raise
+
+
+def test_check_no_extra_dims_no_violation():
+    da = _da(("y", "x", "band"))
+    assert check_no_extra_dims(da, ("y", "x", "band")) == []
+
+
+def test_check_no_extra_dims_reports_extra():
+    da = _da(("y", "x", "band", "time"))
+    msgs = check_no_extra_dims(da, ("y", "x", "band"))
+    assert len(msgs) == 1
+    assert "time" in msgs[0]

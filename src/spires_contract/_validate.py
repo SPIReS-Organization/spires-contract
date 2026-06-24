@@ -39,6 +39,14 @@ def check_coords_present(da, required_coords):
     ]
 
 
+def check_no_extra_dims(da, allowed_dims):
+    """Return a violation if `da` has any dimension not in `allowed_dims`."""
+    extra = [d for d in da.dims if d not in allowed_dims]
+    if extra:
+        return [f"unexpected dimension(s) {extra!r} (allowed: {tuple(allowed_dims)})"]
+    return []
+
+
 def raise_if_violations(contract_name, violations):
     """Raise a single ContractError listing all violations, if any."""
     if violations:

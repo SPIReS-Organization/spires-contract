@@ -8,11 +8,21 @@ Canonical forms (see conventions):
 (see below) transposes/casts a nearly-conforming array into canonical form.
 """
 
+__all__ = [
+    "validate_target_spectra",
+    "validate_background_spectra",
+    "validate_solar_angles",
+    "conform_target_spectra",
+    "conform_background_spectra",
+    "conform_solar_angles",
+]
+
 from spires_contract import conventions as c
 from spires_contract._validate import (
     check_coords_present,
     check_dims_present,
     check_dtype,
+    check_no_extra_dims,
     raise_if_violations,
 )
 
@@ -20,6 +30,7 @@ from spires_contract._validate import (
 def _validate_spectra(da, contract_name):
     violations = []
     violations += check_dims_present(da, c.SPECTRA_DIMS)
+    violations += check_no_extra_dims(da, c.SPECTRA_DIMS)
     violations += check_dtype(da, c.REQUIRED_DTYPE)
     violations += check_coords_present(da, ("band",))
     raise_if_violations(contract_name, violations)
@@ -39,6 +50,7 @@ def validate_solar_angles(da):
     """Validate per-pixel solar zenith angles. Raises ContractError."""
     violations = []
     violations += check_dims_present(da, c.SOLAR_ANGLE_DIMS)
+    violations += check_no_extra_dims(da, c.SOLAR_ANGLE_DIMS)
     violations += check_dtype(da, c.REQUIRED_DTYPE)
     # solar angles are 2-D: a band dimension is a violation
     if "band" in da.dims:
@@ -51,7 +63,9 @@ def validate_solar_angles(da):
 def _conform_spectra(da, contract_name):
     # transpose/cast can fix order and dtype, but a genuinely missing
     # dimension or coordinate cannot be repaired — fail clearly.
+    # extra dimensions cannot be transposed away either.
     violations = check_dims_present(da, c.SPECTRA_DIMS)
+    violations += check_no_extra_dims(da, c.SPECTRA_DIMS)
     violations += check_coords_present(da, ("band",))
     raise_if_violations(contract_name, violations)
     return da.transpose(*c.SPECTRA_DIMS).astype(c.REQUIRED_DTYPE)
@@ -69,6 +83,7 @@ def conform_background_spectra(da):
 
 def conform_solar_angles(da):
     """Return solar angles transposed to (y, x) and cast to float64."""
-    missing = check_dims_present(da, c.SOLAR_ANGLE_DIMS)
-    raise_if_violations("solar_angles", missing)
+    violations = check_dims_present(da, c.SOLAR_ANGLE_DIMS)
+    violations += check_no_extra_dims(da, c.SOLAR_ANGLE_DIMS)
+    raise_if_violations("solar_angles", violations)
     return da.transpose(*c.SOLAR_ANGLE_DIMS).astype(c.REQUIRED_DTYPE)

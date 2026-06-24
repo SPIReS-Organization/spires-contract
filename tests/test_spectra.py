@@ -118,3 +118,25 @@ def test_conform_background_spectra_returns_canonical():
     assert out.dims == ("y", "x", "band")
     assert out.dtype == np.float64
     spectra.validate_background_spectra(out)  # must not raise
+
+
+def test_validate_target_spectra_rejects_extra_dim():
+    da = make_target(dims=("y", "x", "band"))
+    da = da.expand_dims("time")  # now (time, y, x, band)
+    with pytest.raises(ContractError) as exc:
+        spectra.validate_target_spectra(da)
+    assert "time" in str(exc.value)
+
+
+def test_validate_solar_angles_rejects_extra_dim():
+    da = make_solar().expand_dims("time")  # (time, y, x)
+    with pytest.raises(ContractError) as exc:
+        spectra.validate_solar_angles(da)
+    assert "time" in str(exc.value)
+
+
+def test_conform_target_spectra_rejects_extra_dim_cleanly():
+    # the bug: extra dim used to crash conform with a raw ValueError instead of ContractError
+    da = make_target(dims=("y", "x", "band")).expand_dims("time")
+    with pytest.raises(ContractError):
+        spectra.conform_target_spectra(da)

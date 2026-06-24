@@ -5,9 +5,6 @@ float64, matching the spatial grid and band coordinate of the target spectra it
 will be paired with. To be implemented when the spires-r0 package is built.
 """
 
-from spires_contract._validate import ContractError  # noqa: F401  (re-exported for future use)
-
-
 def validate_r0(da):
     """Validate an R_0 background reflectance array. Not yet implemented."""
     raise NotImplementedError(
