@@ -2,4 +2,6 @@
 
 __version__ = "0.1.0"
 
-__all__ = ["__version__"]
+from spires_contract._validate import ContractError
+
+__all__ = ["ContractError", "__version__"]
