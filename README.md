@@ -9,37 +9,22 @@ Depends only on `numpy` and `xarray`.
 
 ## The idea
 
-Think of a contract the way two people agree on a handshake before they ever
-shake hands: both sides commit to the same shape in advance, so neither has to
-guess what the other will do.
+A contract is a handshake the two sides agree on before they ever connect: both
+commit to the same data shape in advance, so neither has to guess.
 
-Here, the "shape" is literal — what does an array of target spectra look like?
-`(y, x, band)`, float64, with a `band` coordinate. One package *produces* that
-array; another *consumes* it. Instead of each package privately assuming the
-shape and discovering the mismatch only when they're wired together (the classic
-"my x and y are swapped" bug), they both point at **one definition, used from
-two sides**:
+Here the "shape" is literal — target spectra are `(y, x, band)`, float64, with a
+`band` coordinate. One package produces that array, another consumes it. Rather
+than each privately assuming the shape and hitting the mismatch only once wired
+together (the classic "x and y are swapped" bug), both point at **one definition,
+used from two sides**: the producer checks *"does what I emit match?"*, the
+consumer checks *"can I handle anything that matches?"*
 
-- the producer asks *"does what I hand over match the agreed shape?"*
-- the consumer asks *"can I handle anything that matches the agreed shape?"*
-
-The contract is the referee they both trust. It doesn't do the science — it just
-makes sure the data showing up at each boundary is the shape everyone agreed on,
-so the packages can be built, tested, and released independently without drifting
-apart.
-
-## Why a contract package
-
-The SPIReS packages are developed and released independently, but they have to
-agree on the exact form of the data passed between them — dimension names and
-order, dtype, required coordinates, units. Historically that agreement lived
-informally in docstrings, which is where dimension-ordering and dtype bugs creep
-in at the seams.
-
-`spires-contract` makes that agreement **executable and shared**. The interface
-for each boundary is defined exactly once, here, and every package on either
-side of a boundary depends on this package to check itself against the same
-source of truth.
+This agreement used to live informally in docstrings — exactly where
+dimension-order and dtype bugs creep in. `spires-contract` makes it executable
+and shared: each boundary is defined once, here, and packages on both sides check
+themselves against the same source of truth. The contract validates the data at
+each seam, not the science, so packages stay independently buildable and
+releasable without drifting apart.
 
 ## Install
 
