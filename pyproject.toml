@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spires-contract"
+version = "0.1.0"
+description = "Data-interface contracts (xarray schemas + validators) for the SPIReS package family"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Niklas Griessbaum" }]
+keywords = ["snow", "remote sensing", "xarray", "data contract", "validation"]
+dependencies = [
+    "numpy",
+    "xarray",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.urls]
+Homepage = "https://github.com/SPIReS-Organization/spires-contract"
+Repository = "https://github.com/SPIReS-Organization/spires-contract"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
