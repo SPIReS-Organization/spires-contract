@@ -7,6 +7,27 @@ packages (I/O, LUT generation, R_0 production, inversion, postprocessing).
 
 Depends only on `numpy` and `xarray`.
 
+## The idea
+
+Think of a contract the way two people agree on a handshake before they ever
+shake hands: both sides commit to the same shape in advance, so neither has to
+guess what the other will do.
+
+Here, the "shape" is literal — what does an array of target spectra look like?
+`(y, x, band)`, float64, with a `band` coordinate. One package *produces* that
+array; another *consumes* it. Instead of each package privately assuming the
+shape and discovering the mismatch only when they're wired together (the classic
+"my x and y are swapped" bug), they both point at **one definition, used from
+two sides**:
+
+- the producer asks *"does what I hand over match the agreed shape?"*
+- the consumer asks *"can I handle anything that matches the agreed shape?"*
+
+The contract is the referee they both trust. It doesn't do the science — it just
+makes sure the data showing up at each boundary is the shape everyone agreed on,
+so the packages can be built, tested, and released independently without drifting
+apart.
+
 ## Why a contract package
 
 The SPIReS packages are developed and released independently, but they have to
