@@ -43,8 +43,17 @@ source of truth.
 
 ## Install
 
+Not yet published to PyPI. Install from source:
+
 ```bash
-pip install spires-contract
+git clone https://github.com/SPIReS-Organization/spires-contract.git
+pip install ./spires-contract
+```
+
+Or, for local development (editable install from a checkout):
+
+```bash
+pip install -e .
 ```
 
 ## Usage
