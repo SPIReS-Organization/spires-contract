@@ -102,3 +102,19 @@ def test_conform_target_spectra_raises_when_dim_absent():
     da = make_target(dims=("y", "x"), with_band_coord=False)
     with pytest.raises(ContractError):
         spectra.conform_target_spectra(da)
+
+
+def test_conform_target_spectra_raises_when_band_coord_absent():
+    # all dims present but no band coordinate -> conform must refuse, not return invalid
+    da = make_target(with_band_coord=False)
+    with pytest.raises(ContractError):
+        spectra.conform_target_spectra(da)
+
+
+def test_conform_background_spectra_returns_canonical():
+    # smoke test the background delegation: callable, transposes, casts
+    da = make_target(dims=("band", "y", "x"), dtype=np.float32)
+    out = spectra.conform_background_spectra(da)
+    assert out.dims == ("y", "x", "band")
+    assert out.dtype == np.float64
+    spectra.validate_background_spectra(out)  # must not raise

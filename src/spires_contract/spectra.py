@@ -49,9 +49,11 @@ def validate_solar_angles(da):
 
 
 def _conform_spectra(da, contract_name):
-    # A missing dimension cannot be repaired by transpose/cast — fail clearly.
-    missing = check_dims_present(da, c.SPECTRA_DIMS)
-    raise_if_violations(contract_name, missing)
+    # transpose/cast can fix order and dtype, but a genuinely missing
+    # dimension or coordinate cannot be repaired — fail clearly.
+    violations = check_dims_present(da, c.SPECTRA_DIMS)
+    violations += check_coords_present(da, ("band",))
+    raise_if_violations(contract_name, violations)
     return da.transpose(*c.SPECTRA_DIMS).astype(c.REQUIRED_DTYPE)
 
 
