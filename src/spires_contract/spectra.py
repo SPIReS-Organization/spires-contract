@@ -1,8 +1,8 @@
 """I/O -> inversion boundary contract: target/background spectra + solar angles.
 
 Canonical forms (see conventions):
-- target/background spectra: dims (y, x, band), float64, with a `band` coordinate
-- solar angles:              dims (y, x),       float64
+- target/background spectra: dims (y, x, band), float32 or float64, with a `band` coordinate
+- solar angles:              dims (y, x),       float32 or float64
 
 Dimension ORDER is part of the contract — the C++ inversion kernel indexes
 arrays positionally, so a transposed array is as wrong as a missing dimension.
@@ -33,7 +33,7 @@ def _validate_spectra(da, contract_name):
     violations += check_dims_present(da, c.SPECTRA_DIMS)
     violations += check_no_extra_dims(da, c.SPECTRA_DIMS)
     violations += check_dims_order(da, c.SPECTRA_DIMS)
-    violations += check_dtype(da, c.REQUIRED_DTYPE)
+    violations += check_dtype(da, c.ACCEPTED_DTYPES)
     violations += check_coords_present(da, ("band",))
     raise_if_violations(contract_name, violations)
 
@@ -54,7 +54,7 @@ def validate_solar_angles(da):
     violations += check_dims_present(da, c.SOLAR_ANGLE_DIMS)
     violations += check_no_extra_dims(da, c.SOLAR_ANGLE_DIMS)
     violations += check_dims_order(da, c.SOLAR_ANGLE_DIMS)
-    violations += check_dtype(da, c.REQUIRED_DTYPE)
+    violations += check_dtype(da, c.ACCEPTED_DTYPES)
     # solar angles are 2-D: a band dimension is a violation
     if "band" in da.dims:
         violations.append(

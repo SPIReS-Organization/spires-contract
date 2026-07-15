@@ -21,12 +21,20 @@ def check_dims_present(da, required_dims):
     ]
 
 
-def check_dtype(da, required_dtype):
-    """Return a violation if `da` is not the required dtype."""
-    if np.dtype(da.dtype) != np.dtype(required_dtype):
-        return [
-            f"dtype is {np.dtype(da.dtype)}, expected {np.dtype(required_dtype)}"
-        ]
+def check_dtype(da, accepted_dtypes):
+    """Return a violation if `da`'s dtype is not among the accepted dtype(s).
+
+    `accepted_dtypes` may be a single dtype-like or a collection of them. The
+    array conforms if its dtype matches any accepted dtype. Passing a single
+    dtype preserves the original single-dtype behavior.
+    """
+    if isinstance(accepted_dtypes, (list, tuple, set, frozenset)):
+        accepted = tuple(np.dtype(dt) for dt in accepted_dtypes)
+    else:
+        accepted = (np.dtype(accepted_dtypes),)
+    if np.dtype(da.dtype) not in accepted:
+        expected = " or ".join(str(dt) for dt in accepted)
+        return [f"dtype is {np.dtype(da.dtype)}, expected {expected}"]
     return []
 
 
