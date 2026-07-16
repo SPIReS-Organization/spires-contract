@@ -18,13 +18,14 @@ LUT_DIMS = ("band", "solar_angle", "dust_concentration", "grain_size")
 # Inversion output vector, in this order, along the trailing result axis.
 RESULT_VARIABLES = ("fsca", "fshade", "dust_concentration", "grain_size")
 
-# Accepted floating dtypes at the I/O -> inversion boundary. The C++/SWIG
-# inversion layer stores these large arrays as-is and promotes each value to
-# double at read time for the interpolation/cost math (NLopt stays double), so
-# both float32 (half the memory) and float64 are valid. float32 is preferred by
-# producers (spires-io loads reflectance as float32); float64 remains accepted
-# for back-compatibility.
-ACCEPTED_DTYPES = (np.float32, np.float64)
+# Canonical floating dtype at the I/O -> inversion boundary: float32 only. The
+# C++/SWIG inversion layer stores these large arrays as float32 (half the memory)
+# and promotes each value to double at read time, so the interpolation/cost math
+# and NLopt run in full double precision regardless. Enforcing a single dtype here
+# keeps the batch inversion path deterministic (one kernel, no runtime dtype
+# branch) and rejects float64 inputs at the boundary rather than silently
+# round-tripping them float64 -> float32 -> double.
+ACCEPTED_DTYPES = (np.float32,)
 
 # Back-compat alias: some callers referenced REQUIRED_DTYPE. Kept pointing at the
 # accepted set so a single source of truth drives validation.
