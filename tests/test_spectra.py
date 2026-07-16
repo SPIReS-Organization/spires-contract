@@ -6,13 +6,13 @@ from spires_contract import spectra
 from spires_contract._validate import ContractError
 
 
-def make_target(dims=("y", "x", "band"), dtype=np.float64, with_band_coord=True):
+def make_target(dims=("y", "x", "band"), dtype=np.float32, with_band_coord=True):
     shape = tuple({"y": 3, "x": 4, "band": 5}[d] for d in dims)
     coords = {"band": np.arange(shape[dims.index("band")])} if with_band_coord and "band" in dims else {}
     return xr.DataArray(np.zeros(shape, dtype=dtype), dims=dims, coords=coords)
 
 
-def make_solar(dims=("y", "x"), dtype=np.float64):
+def make_solar(dims=("y", "x"), dtype=np.float32):
     sizes = {"y": 3, "x": 4}
     shape = tuple(sizes[d] for d in dims)
     return xr.DataArray(np.zeros(shape, dtype=dtype), dims=dims)
@@ -29,11 +29,31 @@ def test_validate_target_spectra_rejects_missing_band_dim():
     assert "band" in str(exc.value)
 
 
-def test_validate_target_spectra_rejects_wrong_dtype():
-    da = make_target(dtype=np.float32)
+def test_validate_target_spectra_accepts_float32():
+    # float32 is the canonical boundary dtype.
+    spectra.validate_target_spectra(make_target(dtype=np.float32))  # must not raise
+
+
+def test_validate_target_spectra_rejects_float64():
+    # float64 is no longer accepted: the boundary is float32-only so the batch
+    # inversion path stays a single deterministic kernel.
+    da = make_target(dtype=np.float64)
     with pytest.raises(ContractError) as exc:
         spectra.validate_target_spectra(da)
     assert "float64" in str(exc.value)
+
+
+def test_validate_solar_angles_accepts_float32():
+    spectra.validate_solar_angles(make_solar(dtype=np.float32))  # must not raise
+
+
+def test_validate_target_spectra_rejects_non_float_dtype():
+    # A non-float dtype (e.g. int) is still a violation.
+    da = make_target(dtype=np.int32)
+    with pytest.raises(ContractError) as exc:
+        spectra.validate_target_spectra(da)
+    text = str(exc.value)
+    assert "int32" in text and "float32" in text  # message names actual + expected dtype
 
 
 def test_validate_target_spectra_rejects_missing_band_coord():
@@ -45,11 +65,11 @@ def test_validate_target_spectra_rejects_missing_band_coord():
 
 def test_validate_target_spectra_collects_multiple_violations():
     # wrong dtype AND missing band coordinate -> both reported in one error
-    da = make_target(dtype=np.float32, with_band_coord=False)
+    da = make_target(dtype=np.int32, with_band_coord=False)
     with pytest.raises(ContractError) as exc:
         spectra.validate_target_spectra(da)
     text = str(exc.value)
-    assert "float64" in text
+    assert "int32" in text
     assert "band" in text
 
 
