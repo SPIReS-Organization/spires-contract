@@ -38,6 +38,16 @@ def check_dtype(da, accepted_dtypes):
     return []
 
 
+def check_data_vars_present(dataset, required_vars):
+    """Return a violation per required data variable missing from a dataset."""
+    return [
+        f"missing required data variable {name!r} "
+        f"(found data variables: {tuple(dataset.data_vars)})"
+        for name in required_vars
+        if name not in dataset.data_vars
+    ]
+
+
 def check_coords_present(da, required_coords):
     """Return a violation per required coordinate missing from `da.coords`."""
     return [
@@ -53,6 +63,88 @@ def check_no_extra_dims(da, allowed_dims):
     if extra:
         return [f"unexpected dimension(s) {extra!r} (allowed: {tuple(allowed_dims)})"]
     return []
+
+
+def check_coords_match(
+    reference,
+    candidate,
+    required_coords,
+    *,
+    reference_name="reference",
+    candidate_name="candidate",
+):
+    """Return violations when required coordinates do not match exactly.
+
+    Coordinate attributes are not part of alignment, but dimension structure,
+    dtype, shape, and values are. Missing coordinates are reported here so the
+    helper is independently actionable.
+    """
+    violations = []
+    for coord in required_coords:
+        reference_has_coord = coord in reference.coords
+        candidate_has_coord = coord in candidate.coords
+        if not reference_has_coord:
+            violations.append(f"{reference_name} is missing coordinate {coord!r}")
+        if not candidate_has_coord:
+            violations.append(f"{candidate_name} is missing coordinate {coord!r}")
+        if not (reference_has_coord and candidate_has_coord):
+            continue
+
+        reference_coord = reference.coords[coord]
+        candidate_coord = candidate.coords[coord]
+        matches = (
+            tuple(reference_coord.dims) == tuple(candidate_coord.dims)
+            and reference_coord.shape == candidate_coord.shape
+            and np.dtype(reference_coord.dtype) == np.dtype(candidate_coord.dtype)
+            and reference_coord.equals(candidate_coord)
+        )
+        if not matches:
+            violations.append(
+                f"coordinate {coord!r} on {candidate_name} does not exactly match "
+                f"{reference_name}"
+            )
+    return violations
+
+
+def check_binary_mask(da):
+    """Return violations unless an array is Boolean or integer-valued 0/1."""
+    dtype = np.dtype(da.dtype)
+    if np.issubdtype(dtype, np.bool_):
+        return []
+    if not np.issubdtype(dtype, np.integer):
+        return [f"mask dtype is {dtype}, expected bool or an integer dtype"]
+
+    values = np.asarray(da.values)
+    invalid = values[(values != 0) & (values != 1)]
+    if invalid.size:
+        found = np.unique(invalid)
+        return [f"integer mask contains value(s) outside 0/1: {found.tolist()}"]
+    return []
+
+
+def check_cluster_labels(da):
+    """Return violations for invalid cluster-label dtype or label values."""
+    dtype = np.dtype(da.dtype)
+    if not np.issubdtype(dtype, np.integer) or np.issubdtype(dtype, np.bool_):
+        return [f"cluster-label dtype is {dtype}, expected an integer dtype"]
+
+    values = np.asarray(da.values)
+    violations = []
+    below_sentinel = values[values < -1]
+    if below_sentinel.size:
+        found = np.unique(below_sentinel)
+        violations.append(
+            f"cluster labels contain value(s) below the -1 sentinel: {found.tolist()}"
+        )
+
+    labels = np.unique(values[values >= 0])
+    expected = np.arange(labels.size, dtype=labels.dtype)
+    if not np.array_equal(labels, expected):
+        violations.append(
+            "nonnegative cluster labels must be contiguous from 0; "
+            f"found {labels.tolist()}"
+        )
+    return violations
 
 
 def check_dims_order(da, required_dims):
