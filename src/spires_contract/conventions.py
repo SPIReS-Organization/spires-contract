@@ -47,6 +47,8 @@ REQUIRED_CLUSTER_VARIABLES = (
     CLUSTER_LABEL_VARIABLE,
     CLUSTER_COUNT_VARIABLE,
 ) + CLUSTER_REPRESENTATIVE_VARIABLES
+OPTIONAL_CLUSTER_VARIABLES = ("cluster_representative_cosine_illumination",)
+CLUSTER_MASK_POLICY_ATTR = "valid_inversion_mask_applied"
 
 # Canonical result metadata. Additional attributes are allowed.
 RESULT_LONG_NAMES = {
