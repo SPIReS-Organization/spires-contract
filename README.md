@@ -47,8 +47,8 @@ Only `scene` is required at construction. `background`, `ancillary`, and
 preserving lazy backing arrays while preventing accidental replacement of a
 field on the frozen object.
 
-The object provides neutral accessors for target reflectance, solar zenith,
-and the inversion-validity mask. Loading, clustering, inversion,
+Scene variables are accessed directly through `data.scene`; the container does
+not provide variable-specific accessors. Loading, clustering, inversion,
 postprocessing, and writing remain package-level behavior in the packages that
 own those operations.
 

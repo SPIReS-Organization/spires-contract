@@ -14,11 +14,8 @@ from spires_contract.alignment import (
     validate_spatial_alignment,
 )
 from spires_contract.clusters import clusters_present, validate_clusters
-from spires_contract.data import (
-    SpiresData,
-    validate_for_inversion,
-    validate_spires_data,
-)
+from spires_contract.data import SpiresData, validate_spires_data
+from spires_contract.inversion_input import validate_for_inversion
 from spires_contract.lut import validate_lut
 from spires_contract.results import validate_results
 
