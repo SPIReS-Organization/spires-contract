@@ -37,9 +37,9 @@ import xarray as xr
 from spires_contract import SpiresData
 
 data = SpiresData(scene=scene)
-data = data.with_background(background)
-data = data.with_ancillary(ancillary)
-data = data.with_results(results)
+data = data.assign_background(background)
+data = data.assign_ancillary(ancillary)
+data = data.assign_results(results)
 ```
 
 Only `scene` is required at construction. `background`, `ancillary`, and
@@ -65,11 +65,15 @@ Required inputs before inversion are:
 | --- | --- | --- | --- |
 | `data.scene` | `reflectance` | `(y, x, band)` | `float32` |
 | `data.scene` | `solar_zenith` | `(y, x)` | `float32` |
-| `data.scene` | `valid_inversion_mask` | `(y, x)` | Boolean or integer `0/1` |
 | `data.background` | background reflectance | `(y, x, band)` | `float32` |
 
 Spatial and band coordinates must match exactly. Validation inspects inputs but
 does not transpose, cast, resample, clip, or otherwise mutate them.
+
+`data.scene["valid_inversion_mask"]` is optional. When present, it has
+dimensions `(y, x)` and is Boolean or integer `0/1`. Runtime configuration
+controls whether inversion and clustering apply it; absent masks do not make an
+otherwise valid scene fail the I/O-to-inversion contract.
 
 ```python
 from spires_contract import validate_for_inversion

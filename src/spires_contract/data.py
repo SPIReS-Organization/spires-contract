@@ -65,19 +65,19 @@ class SpiresData:
             bullets = "\n".join(f"  - {violation}" for violation in violations)
             raise TypeError(f"invalid SpiresData field type(s):\n{bullets}")
 
-    def with_scene(self, scene: xr.Dataset) -> "SpiresData":
+    def assign_scene(self, scene: xr.Dataset) -> "SpiresData":
         """Return a replacement carrying a shallow copy of ``scene``."""
         return replace(self, scene=scene.copy(deep=False))
 
-    def with_background(self, background: xr.DataArray) -> "SpiresData":
+    def assign_background(self, background: xr.DataArray) -> "SpiresData":
         """Return a replacement carrying a shallow copy of ``background``."""
         return replace(self, background=background.copy(deep=False))
 
-    def with_ancillary(self, ancillary: xr.Dataset) -> "SpiresData":
+    def assign_ancillary(self, ancillary: xr.Dataset) -> "SpiresData":
         """Return a replacement carrying a shallow copy of ``ancillary``."""
         return replace(self, ancillary=ancillary.copy(deep=False))
 
-    def with_results(self, results: xr.Dataset) -> "SpiresData":
+    def assign_results(self, results: xr.Dataset) -> "SpiresData":
         """Return a replacement carrying a shallow copy of ``results``."""
         return replace(self, results=results.copy(deep=False))
 
@@ -92,9 +92,9 @@ class SpiresData:
         return self.scene["solar_zenith"]
 
     @property
-    def valid_mask(self) -> xr.DataArray:
-        """Return the canonical inversion-validity mask."""
-        return self.scene["valid_inversion_mask"]
+    def valid_mask(self) -> Optional[xr.DataArray]:
+        """Return the optional inversion-validity mask when present."""
+        return self.scene.get("valid_inversion_mask")
 
 
 def validate_spires_data(data):

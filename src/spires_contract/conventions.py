@@ -32,8 +32,8 @@ RESULT_DIMS = SPATIAL_DIMS
 REQUIRED_SCENE_VARIABLES = (
     "reflectance",
     "solar_zenith",
-    "valid_inversion_mask",
 )
+OPTIONAL_SCENE_VARIABLES = ("valid_inversion_mask",)
 
 # Required variables for a complete clustered scene.
 CLUSTER_LABEL_VARIABLE = "cluster_label"
