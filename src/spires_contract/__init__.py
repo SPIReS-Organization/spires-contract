@@ -9,6 +9,7 @@ except PackageNotFoundError:
     __version__ = "unknown"
 
 from spires_contract._validate import ContractError
+from spires_contract.data import SpiresData
 from spires_contract.lut import validate_lut
 
-__all__ = ["ContractError", "validate_lut", "__version__"]
+__all__ = ["ContractError", "SpiresData", "validate_lut", "__version__"]
