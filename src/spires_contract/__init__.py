@@ -20,6 +20,7 @@ from spires_contract.data import (
     validate_spires_data,
 )
 from spires_contract.lut import validate_lut
+from spires_contract.results import validate_results
 
 __all__ = [
     "ContractError",
@@ -29,6 +30,7 @@ __all__ = [
     "validate_clusters",
     "validate_for_inversion",
     "validate_lut",
+    "validate_results",
     "validate_spatial_alignment",
     "validate_spires_data",
     "__version__",

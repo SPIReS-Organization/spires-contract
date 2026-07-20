@@ -63,6 +63,7 @@ RESULT_UNITS = {
     "lap_concentration": "ppm",
     "grain_size": "um",
 }
+GRAIN_SIZE_UNIT_ALIASES = ("um", "µm", "μm")
 INITIAL_LAP_TYPE = "dust"
 
 # Canonical floating dtype at the I/O -> inversion boundary: float32 only. The
