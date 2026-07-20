@@ -1,7 +1,7 @@
 """R_0 -> inversion boundary contract (STUB — not yet implemented).
 
 Planned spec: background (snow-free) reflectance R_0 with dims (y, x, band),
-float64, matching the spatial grid and band coordinate of the target spectra it
+float32, matching the spatial grid and band coordinate of the target spectra it
 will be paired with. To be implemented when the spires-r0 package is built.
 """
 

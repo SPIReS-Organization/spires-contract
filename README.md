@@ -1,135 +1,179 @@
 # spires-contract
 
-Data-interface contracts for the [SPIReS](https://github.com/SPIReS-Organization)
-package family. Defines, as executable `xarray` validators, the array shapes,
-dimension names, dtypes, and coordinate conventions that flow between SPIReS
-packages (I/O, LUT generation, R_0 production, inversion, postprocessing).
+Shared data structures and executable boundary contracts for the
+[SPIReS](https://github.com/SPIReS-Organization) package family.
 
-Depends only on `numpy` and `xarray`.
+`spires-contract` owns the neutral `SpiresData` container, canonical names,
+and validation rules used by `spires-io`, `spires-inversion`, and
+`spires-postprocess`. It depends only on NumPy and xarray and never imports a
+scientific stage package.
 
-## The idea
-
-A contract is a handshake the two sides agree on before they ever connect: both
-commit to the same data shape in advance, so neither has to guess.
-
-Here the "shape" is literal — target spectra are `(y, x, band)`, float64, with a
-`band` coordinate. One package produces that array, another consumes it. Rather
-than each privately assuming the shape and hitting the mismatch only once wired
-together (the classic "x and y are swapped" bug), both point at **one definition,
-used from two sides**: the producer checks *"does what I emit match?"*, the
-consumer checks *"can I handle anything that matches?"*
-
-This agreement used to live informally in docstrings — exactly where
-dimension-order and dtype bugs creep in. `spires-contract` makes it executable
-and shared: each boundary is defined once, here, and packages on both sides check
-themselves against the same source of truth. The contract validates the data at
-each seam, not the science, so packages stay independently buildable and
-releasable without drifting apart.
+The initial object contract is intentionally limited to one in-memory scene.
+Existing time-aware or Dask-backed lower-level stage APIs can remain available
+outside this object workflow.
 
 ## Install
 
-Not yet published to PyPI. Install from source:
+The package is not yet published to PyPI. Install it from a checkout:
 
 ```bash
-git clone https://github.com/SPIReS-Organization/spires-contract.git
 pip install ./spires-contract
 ```
 
-Or, for local development (editable install from a checkout):
+For local development:
 
 ```bash
-pip install -e .
+pip install -e ./spires-contract
 ```
 
-## Usage
+## Shared data object
 
-Each boundary module exposes `validate_*(da)` functions that raise
-`ContractError` listing **every** violation at once — wrong dimension order,
-missing or extra dimension, missing coordinate, wrong dtype — so a producer
-gets one actionable error rather than fixing problems one at a time.
+`SpiresData` is a frozen envelope that is enriched as a scene moves through
+the scientific stages:
 
 ```python
-import spires_contract.spectra as spectra
+import xarray as xr
 
-spectra.validate_target_spectra(da)   # raises ContractError listing all violations
+from spires_contract import SpiresData
+
+data = SpiresData(scene=scene)
+data = data.with_background(background)
+data = data.with_ancillary(ancillary)
+data = data.with_results(results)
 ```
 
-The contract **validates**; it does not mutate. There are deliberately no
-`conform`/normalize helpers: a contract that silently transposed or cast arrays
-would hide a per-call performance cost (a large-array copy) inside what looks
-like a check. Producers are expected to hand over data already in canonical
-form — including **dimension order**, which is part of the contract because the
-inversion kernel indexes arrays positionally.
+Only `scene` is required at construction. `background`, `ancillary`, and
+`results` may be added later. Replacement methods make shallow xarray copies,
+preserving lazy backing arrays while preventing accidental replacement of a
+field on the frozen object.
 
-## How to use it from both sides of a boundary
+The object provides neutral accessors for target reflectance, solar zenith,
+and the inversion-validity mask. Loading, clustering, inversion,
+postprocessing, and writing remain package-level behavior in the packages that
+own those operations.
 
-The contract is defined once and used to test **both directions** of each
-boundary.
+## Canonical single-scene boundary
 
-**Producer side** (e.g. `spires-io` emitting target spectra) — assert that what
-it produces conforms:
+Scientific numeric data variables crossing package boundaries are `float32`.
+Validators reject float64 producer output rather than silently casting it.
+Coordinates retain the native dtype appropriate to the grid, time, band, or
+cluster identifier.
+
+Required inputs before inversion are:
+
+| Location | Variable | Dimensions | Dtype |
+| --- | --- | --- | --- |
+| `data.scene` | `reflectance` | `(y, x, band)` | `float32` |
+| `data.scene` | `solar_zenith` | `(y, x)` | `float32` |
+| `data.scene` | `valid_inversion_mask` | `(y, x)` | Boolean or integer `0/1` |
+| `data.background` | background reflectance | `(y, x, band)` | `float32` |
+
+Spatial and band coordinates must match exactly. Validation inspects inputs but
+does not transpose, cast, resample, clip, or otherwise mutate them.
 
 ```python
-from spires_contract import spectra
+from spires_contract import validate_for_inversion
 
-def test_io_output_conforms():
-    da = load_sentinel2_target(...)        # the producer's real output
-    spectra.validate_target_spectra(da)    # must not raise
+validate_for_inversion(data)
 ```
 
-**Consumer side** (e.g. `spires-inversion` accepting target spectra) — two
-obligations:
+## Clustered inputs
 
-1. Accept *anything the contract permits*. Build a conforming input, certify
-   it with the validator, and assert the consumer handles it:
+A scene is either unclustered or contains the complete canonical cluster
+schema:
 
-   ```python
-   from spires_contract import spectra
+| Variable | Dimensions | Dtype |
+| --- | --- | --- |
+| `cluster_label` | `(y, x)` | integer |
+| `cluster_count` | `(cluster,)` | integer |
+| `cluster_representative_reflectance` | `(cluster, band)` | `float32` |
+| `cluster_representative_background` | `(cluster, band)` | `float32` |
+| `cluster_representative_solar_zenith` | `(cluster,)` | `float32` |
+| `cluster_representative_cosine_illumination` | `(cluster,)` | `float32`, optional |
 
-   def test_inversion_accepts_contract_valid_spectra():
-       da = make_conforming_target(dims=("y", "x", "band"))  # canonical
-       spectra.validate_target_spectra(da)                   # precondition: it IS valid
-       result = invert(da, ...)                              # consumer must not choke
-   ```
+`cluster_label == -1` marks excluded pixels. Nonnegative labels are contiguous
+from zero, counts must exactly match label membership, and representative
+coordinates must match the scene. Empty clustering is represented by all `-1`
+labels and zero-length cluster arrays. Cluster-label metadata records
+`valid_inversion_mask_applied` as Boolean or integer `0/1`.
 
-   Certifying the fixture with the validator guarantees you are testing against a
-   genuinely conforming input, not your assumption of one.
+```python
+from spires_contract import validate_clusters
 
-2. As a producer of downstream data (its `results`), the consumer gets a
-   producer-side test against *that* boundary's validator.
-
-### What a contract does and does not guarantee
-
-A contract validates **data, not behavior**. It guarantees the inversion
-*receives* a well-formed `(y, x, band)` float64 array with a `band` coordinate;
-it does **not** guarantee the inversion interprets the band axis correctly or
-returns physically sensible output. Those remain each package's own numerical
-and correctness tests. The contract simply removes the entire class of
-shape/dtype/dimension-naming mismatches at the seams.
-
-This package deliberately stays minimal: `validate_*` only. It does not ship
-shared example-builder fixtures — each package builds its own test fixtures and
-certifies them with the validators above.
-
-## Boundaries
-
-| Module                    | Boundary                   | Status      |
-|---------------------------|----------------------------|-------------|
-| `spires_contract.spectra` | I/O → inversion            | implemented |
-| `spires_contract.lut`     | LUT → inversion            | stub        |
-| `spires_contract.r0`      | R_0 → inversion            | stub        |
-| `spires_contract.results` | inversion → postprocess    | stub        |
-
-### Canonical forms
-
-| Data                  | dims                                                  | dtype   | notes                          |
-|-----------------------|-------------------------------------------------------|---------|--------------------------------|
-| target spectra        | `(y, x, band)`                                        | float64 | mixed reflectance, `band` coord |
-| background spectra    | `(y, x, band)`                                        | float64 | R_0 reflectance, `band` coord   |
-| solar angles          | `(y, x)`                                              | float64 | solar zenith, degrees          |
-| LUT                   | `(band, solar_angle, dust_concentration, grain_size)` | float64 | Mie-theory reflectance table   |
-| results               | `(y, x)` per variable                                 | float64 | `fsca`, `fshade`, dust, grain  |
-
-The canonical dimension names, dtype, and result-variable ordering are the
-single source of truth in `spires_contract.conventions`.
+validate_clusters(data)
 ```
+
+## Canonical inversion results
+
+The four base variables share exact `(y, x)` coordinates:
+
+| Variable | Dtype | Units | Finite-value rule |
+| --- | --- | --- | --- |
+| `fsnow` | `float32` | `1` | `[0, 1]` |
+| `fshade` | `float32` | `1` | `[0, 1]` |
+| `lap_concentration` | `float32` | `ppm` | nonnegative |
+| `grain_size` | `float32` | `um` | nonnegative |
+
+`lap_concentration` additionally carries `lap_type="dust"`. NaNs are allowed,
+but infinities and invalid finite values are rejected. When an effective
+eligibility mask is supplied, every base result must be NaN outside that mask.
+Extra result variables are allowed so postprocessing can enrich the same
+dataset. The initial shared contract does not enforce
+`fsnow + fshade <= 1`.
+
+```python
+from spires_contract import validate_results
+
+validate_results(
+    data.results,
+    scene=data.scene,
+    eligibility_mask=effective_eligibility,
+)
+```
+
+Validation never clips values into physical ranges.
+
+## Validation behavior
+
+Validators raise `ContractError` with related violations collected into one
+actionable message. They validate data at package boundaries, not scientific
+correctness, and never normalize accepted inputs.
+
+The main public validators are:
+
+- `validate_spires_data(data)` for the neutral container type.
+- `validate_for_inversion(data)` for complete full-resolution or clustered
+  inversion input.
+- `validate_spatial_alignment(data)` for exact field alignment.
+- `validate_clusters(data)` for complete-or-absent cluster state.
+- `validate_results(results, scene=..., eligibility_mask=...)` for canonical
+  inversion output.
+- `validate_lut(lut)` for the float32 LUT boundary.
+
+Standalone `validate_r0()` remains deferred until the `spires-r0` package is
+implemented; background reflectance used by inversion is already validated by
+`validate_for_inversion()`.
+
+## Package boundaries
+
+| Boundary | Contract | Status |
+| --- | --- | --- |
+| shared lifecycle | `SpiresData` | implemented |
+| I/O → inversion | scene, background, masks, alignment | implemented |
+| clustered I/O → inversion | cluster labels, counts, representatives | implemented |
+| LUT → inversion | lookup table | implemented |
+| inversion → postprocess | canonical result dataset | implemented |
+| standalone R₀ product | `validate_r0` | deferred stub |
+
+## Development and release
+
+Run verification in the workspace environment:
+
+```bash
+module load miniforge
+mamba run -n spipy14 python -m pytest
+```
+
+Versions are derived from Git tags with `setuptools-scm`. The planned release
+for this expanded shared contract is `v0.4.0`; creating and publishing that tag
+is a separate release action after review.

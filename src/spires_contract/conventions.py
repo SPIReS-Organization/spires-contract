@@ -66,13 +66,9 @@ RESULT_UNITS = {
 GRAIN_SIZE_UNIT_ALIASES = ("um", "µm", "μm")
 INITIAL_LAP_TYPE = "dust"
 
-# Canonical floating dtype at the I/O -> inversion boundary: float32 only. The
-# C++/SWIG inversion layer stores these large arrays as float32 (half the memory)
-# and promotes each value to double at read time, so the interpolation/cost math
-# and NLopt run in full double precision regardless. Enforcing a single dtype here
-# keeps the batch inversion path deterministic (one kernel, no runtime dtype
-# branch) and rejects float64 inputs at the boundary rather than silently
-# round-tripping them float64 -> float32 -> double.
+# Canonical floating dtype for scientific data at SPIReS package boundaries.
+# Internal numerical kernels may promote values for computation, but public
+# producers emit float32 and validators never silently cast float64 inputs.
 ACCEPTED_DTYPES = (np.float32,)
 
 # Back-compat alias: some callers referenced REQUIRED_DTYPE. Kept pointing at the
