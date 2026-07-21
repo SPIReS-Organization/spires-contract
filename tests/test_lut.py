@@ -5,9 +5,9 @@ import xarray as xr
 from spires_contract import lut
 from spires_contract._validate import ContractError
 
-# Canonical LUT dims (band, solar_angle, dust_concentration, grain_size).
-_DIMS = ("band", "solar_angle", "dust_concentration", "grain_size")
-_SIZES = {"band": 9, "solar_angle": 4, "dust_concentration": 3, "grain_size": 5}
+# Canonical LUT dims (band, solar_angle, lap_concentration, grain_size).
+_DIMS = ("band", "solar_angle", "lap_concentration", "grain_size")
+_SIZES = {"band": 9, "solar_angle": 4, "lap_concentration": 3, "grain_size": 5}
 
 
 def make_lut(dims=_DIMS, dtype=np.float32, coords=_DIMS):
@@ -42,14 +42,14 @@ def test_validate_lut_rejects_non_float_dtype():
 
 def test_validate_lut_rejects_wrong_dim_order():
     # order is part of the contract: a transposed LUT must be rejected
-    da = make_lut(dims=("solar_angle", "band", "dust_concentration", "grain_size"))
+    da = make_lut(dims=("solar_angle", "band", "lap_concentration", "grain_size"))
     with pytest.raises(ContractError) as exc:
         lut.validate_lut(da)
     assert "canonical order" in str(exc.value)
 
 
 def test_validate_lut_rejects_missing_dim():
-    da = make_lut(dims=("band", "solar_angle", "dust_concentration"))
+    da = make_lut(dims=("band", "solar_angle", "lap_concentration"))
     with pytest.raises(ContractError) as exc:
         lut.validate_lut(da)
     assert "grain_size" in str(exc.value)
@@ -64,7 +64,7 @@ def test_validate_lut_rejects_extra_dim():
 
 def test_validate_lut_rejects_missing_coordinate():
     # interpolator reads coord values to locate query points; a missing one is a violation
-    da = make_lut(coords=("band", "solar_angle", "dust_concentration"))  # no grain_size coord
+    da = make_lut(coords=("band", "solar_angle", "lap_concentration"))  # no grain_size coord
     with pytest.raises(ContractError) as exc:
         lut.validate_lut(da)
     assert "grain_size" in str(exc.value)
@@ -72,7 +72,7 @@ def test_validate_lut_rejects_missing_coordinate():
 
 def test_validate_lut_collects_multiple_violations():
     # wrong dtype AND missing coordinate -> both reported in one error
-    da = make_lut(dtype=np.int32, coords=("band", "solar_angle", "dust_concentration"))
+    da = make_lut(dtype=np.int32, coords=("band", "solar_angle", "lap_concentration"))
     with pytest.raises(ContractError) as exc:
         lut.validate_lut(da)
     text = str(exc.value)
