@@ -12,11 +12,16 @@ SPECTRA_DIMS = ("y", "x", "band")
 # Per-pixel solar zenith angle (degrees).
 SOLAR_ANGLE_DIMS = ("y", "x")
 
-# Reflectance lookup table produced from Mie theory.
-LUT_DIMS = ("band", "solar_angle", "dust_concentration", "grain_size")
+# Reflectance lookup table produced from Mie theory. The light-absorbing-particle
+# axis is named generically ('lap') rather than after one species (dust), since
+# the LAP can be dust, black carbon, etc.
+LUT_DIMS = ("band", "solar_angle", "lap_concentration", "grain_size")
 
 # Inversion output vector, in this order, along the trailing result axis.
-RESULT_VARIABLES = ("fsca", "fshade", "dust_concentration", "grain_size")
+# 'fsnow' is the RAW inversion snow fraction (before fshade / canopy correction);
+# 'fsca' is reserved for the post-processed product (see spires-postprocess).
+# 'lap_concentration' is the light-absorbing-particle concentration.
+RESULT_VARIABLES = ("fsnow", "fshade", "lap_concentration", "grain_size")
 
 # Canonical floating dtype at the I/O -> inversion boundary: float32 only. The
 # C++/SWIG inversion layer stores these large arrays as float32 (half the memory)

@@ -124,11 +124,11 @@ certifies them with the validators above.
 
 | Data                  | dims                                                  | dtype   | notes                          |
 |-----------------------|-------------------------------------------------------|---------|--------------------------------|
-| target spectra        | `(y, x, band)`                                        | float64 | mixed reflectance, `band` coord |
-| background spectra    | `(y, x, band)`                                        | float64 | R_0 reflectance, `band` coord   |
-| solar angles          | `(y, x)`                                              | float64 | solar zenith, degrees          |
-| LUT                   | `(band, solar_angle, dust_concentration, grain_size)` | float64 | Mie-theory reflectance table   |
-| results               | `(y, x)` per variable                                 | float64 | `fsca`, `fshade`, dust, grain  |
+| target spectra        | `(y, x, band)`                                        | float32 | mixed reflectance, `band` coord |
+| background spectra    | `(y, x, band)`                                        | float32 | R_0 reflectance, `band` coord   |
+| solar angles          | `(y, x)`                                              | float32 | solar zenith, degrees          |
+| LUT                   | `(band, solar_angle, lap_concentration, grain_size)`  | float32 | Mie-theory reflectance table   |
+| results               | `(y, x)` per variable                                 | float64 | `fsnow`, `fshade`, `lap`, grain |
 
 The canonical dimension names, dtype, and result-variable ordering are the
 single source of truth in `spires_contract.conventions`.

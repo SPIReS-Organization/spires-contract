@@ -1,7 +1,7 @@
 """inversion -> postprocess boundary contract (STUB — not yet implemented).
 
 Planned spec: inversion output with dims (y, x) per variable, one variable each
-for fsca, fshade, dust_concentration (ppm), grain_size (μm) — see
+for fsnow, fshade, lap_concentration (ppm), grain_size (μm) — see
 conventions.RESULT_VARIABLES — likely as an xarray.Dataset. Need to consider
 whether grouping attributes are required, optional, or ignored. To be
 implemented when the spires-postprocess package is built.

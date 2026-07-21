@@ -11,11 +11,11 @@ def test_canonical_solar_angle_dims():
 
 
 def test_canonical_lut_dims():
-    assert c.LUT_DIMS == ("band", "solar_angle", "dust_concentration", "grain_size")
+    assert c.LUT_DIMS == ("band", "solar_angle", "lap_concentration", "grain_size")
 
 
 def test_result_variables_order():
-    assert c.RESULT_VARIABLES == ("fsca", "fshade", "dust_concentration", "grain_size")
+    assert c.RESULT_VARIABLES == ("fsnow", "fshade", "lap_concentration", "grain_size")
 
 
 def test_accepted_dtypes_are_float32_only():

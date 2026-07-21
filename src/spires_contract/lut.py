@@ -1,7 +1,7 @@
 """LUT -> inversion boundary contract: Mie-theory reflectance lookup table.
 
 Canonical form (see conventions):
-- reflectances: dims (band, solar_angle, dust_concentration, grain_size),
+- reflectances: dims (band, solar_angle, lap_concentration, grain_size),
   float32, with a coordinate present for each of the four dimensions.
 
 Dimension ORDER is part of the contract — the C++ interpolator indexes the LUT
