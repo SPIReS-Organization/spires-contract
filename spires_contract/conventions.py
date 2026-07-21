@@ -21,8 +21,9 @@ CLUSTER_DIMS = (CLUSTER_DIM,)
 CLUSTER_LABEL_DIMS = SPATIAL_DIMS
 CLUSTER_LABEL_SENTINEL = -1
 
-# Reflectance lookup table produced from Mie theory.
-LUT_DIMS = ("band", "solar_angle", "dust_concentration", "grain_size")
+# Reflectance lookup table produced from Mie theory. The light-absorbing-particle
+# axis is generic because LUTs may represent dust, black carbon, or another LAP.
+LUT_DIMS = ("band", "solar_angle", "lap_concentration", "grain_size")
 
 # Inversion output vector, in this order, along the trailing result axis.
 RESULT_VARIABLES = ("fsnow", "fshade", "lap_concentration", "grain_size")

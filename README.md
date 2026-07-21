@@ -178,6 +178,7 @@ module load miniforge
 mamba run -n spipy14 python -m pytest
 ```
 
-Versions are derived from Git tags with `setuptools-scm`. The planned release
-for this expanded shared contract is `v0.4.0`; creating and publishing that tag
-is a separate release action after review.
+Versions are derived from Git tags with `setuptools-scm`. Version `v0.4.0`
+introduced the canonical `fsnow` and generic LAP naming. Creating and
+publishing a later release for this expanded shared contract remains a separate
+action after review.

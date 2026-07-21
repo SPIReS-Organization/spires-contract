@@ -11,7 +11,7 @@ def test_canonical_solar_angle_dims():
 
 
 def test_canonical_lut_dims():
-    assert c.LUT_DIMS == ("band", "solar_angle", "dust_concentration", "grain_size")
+    assert c.LUT_DIMS == ("band", "solar_angle", "lap_concentration", "grain_size")
 
 
 def test_result_variables_order():
