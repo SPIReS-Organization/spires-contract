@@ -28,3 +28,22 @@ def test_accepted_dtypes_are_float32_only():
 def test_required_dtype_alias_points_at_accepted_set():
     # REQUIRED_DTYPE kept as a back-compat alias for the accepted set.
     assert c.REQUIRED_DTYPE == c.ACCEPTED_DTYPES
+
+
+def test_inversion_exclusion_schema_v1_assignments_are_stable():
+    assert c.INVERSION_EXCLUSION_DTYPE == np.dtype(np.uint16)
+    assert c.INVERSION_EXCLUSION_SCHEMA_VERSION == 1
+    assert c.INVERSION_EXCLUSION_BITS == {
+        "invalid_reflectance": 1,
+        "invalid_geometry": 2,
+        "insufficient_observations": 4,
+        "poor_surface_reflectance_quality": 8,
+        "cloud": 16,
+        "cloud_shadow": 32,
+        "water": 64,
+        "ice": 128,
+        "playa": 256,
+        "low_reflectance": 512,
+        "user_exclusion": 1024,
+    }
+    assert c.INVERSION_EXCLUSION_RESERVED_BITS == (11, 12, 13, 14, 15)

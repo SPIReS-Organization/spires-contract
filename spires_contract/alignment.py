@@ -49,7 +49,12 @@ def validate_spatial_alignment(data):
     reference = scene["reflectance"]
     violations = check_coords_present(reference, c.SPECTRA_DIMS)
 
-    for name in ("solar_zenith", "valid_inversion_mask"):
+    for name in (
+        "solar_zenith",
+        c.INVERSION_EXCLUSION_FLAGS_VARIABLE,
+        c.INVERSION_EXCLUSION_ASSESSED_VARIABLE,
+        c.VALID_INVERSION_MASK_VARIABLE,
+    ):
         if name in scene.data_vars:
             violations += check_coords_match(
                 reference,

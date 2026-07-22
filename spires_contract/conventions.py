@@ -34,7 +34,43 @@ REQUIRED_SCENE_VARIABLES = (
     "reflectance",
     "solar_zenith",
 )
-OPTIONAL_SCENE_VARIABLES = ("valid_inversion_mask",)
+
+# Optional atomic inversion-exclusion provenance set. These variables are all
+# present or all absent in a validated SpiresData scene.
+VALID_INVERSION_MASK_VARIABLE = "valid_inversion_mask"
+INVERSION_EXCLUSION_FLAGS_VARIABLE = "inversion_exclusion_flags"
+INVERSION_EXCLUSION_ASSESSED_VARIABLE = "inversion_exclusion_assessed"
+INVERSION_EXCLUSION_VARIABLES = (
+    INVERSION_EXCLUSION_FLAGS_VARIABLE,
+    INVERSION_EXCLUSION_ASSESSED_VARIABLE,
+    VALID_INVERSION_MASK_VARIABLE,
+)
+OPTIONAL_SCENE_VARIABLES = INVERSION_EXCLUSION_VARIABLES
+
+# Stable schema-v1 bit assignments. Published assignments must never be
+# reordered; new meanings may use only currently reserved bits.
+INVERSION_EXCLUSION_SCHEMA_VERSION = 1
+INVERSION_EXCLUSION_DTYPE = np.dtype(np.uint16)
+INVERSION_EXCLUSION_REASONS = (
+    "invalid_reflectance",
+    "invalid_geometry",
+    "insufficient_observations",
+    "poor_surface_reflectance_quality",
+    "cloud",
+    "cloud_shadow",
+    "water",
+    "ice",
+    "playa",
+    "low_reflectance",
+    "user_exclusion",
+)
+INVERSION_EXCLUSION_BITS = {
+    reason: 1 << bit_index
+    for bit_index, reason in enumerate(INVERSION_EXCLUSION_REASONS)
+}
+INVERSION_EXCLUSION_KNOWN_MASK = sum(INVERSION_EXCLUSION_BITS.values())
+INVERSION_EXCLUSION_RESERVED_BITS = tuple(range(11, 16))
+INVERSION_EXCLUSION_SCHEMA_ATTR = "inversion_exclusion_schema_version"
 
 # Required variables for a complete clustered scene.
 CLUSTER_LABEL_VARIABLE = "cluster_label"

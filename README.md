@@ -70,10 +70,26 @@ Required inputs before inversion are:
 Spatial and band coordinates must match exactly. Validation inspects inputs but
 does not transpose, cast, resample, clip, or otherwise mutate them.
 
-`data.scene["valid_inversion_mask"]` is optional. When present, it has
-dimensions `(y, x)` and is Boolean or integer `0/1`. Runtime configuration
-controls whether inversion and clustering apply it; absent masks do not make an
-otherwise valid scene fail the I/O-to-inversion contract.
+Inversion eligibility provenance is an optional atomic set:
+
+| Variable | Dtype | Meaning |
+| --- | --- | --- |
+| `inversion_exclusion_flags` | `uint16` | Conditions that excluded each pixel. |
+| `inversion_exclusion_assessed` | `uint16` | Conditions whose state is known for each pixel. |
+| `valid_inversion_mask` | Boolean or integer `0/1` | Final inversion eligibility. |
+
+All three variables are present or all three are absent in a validated
+`SpiresData`. For each reason, `(flag, assessed)` may be `(0, 0)` for unknown,
+`(0, 1)` for assessed and false, or `(1, 1)` for assessed and true. `(1, 0)`
+is invalid. The validity mask is true exactly where the packed flag value is
+zero.
+
+Schema version 1 assigns bits, in order, to `invalid_reflectance`,
+`invalid_geometry`, `insufficient_observations`,
+`poor_surface_reflectance_quality`, `cloud`, `cloud_shadow`, `water`, `ice`,
+`playa`, `low_reflectance`, and `user_exclusion`; bits 11 through 15 are
+reserved. Runtime configuration controls whether inversion and clustering
+apply the valid mask when the atomic set is present.
 
 ```python
 from spires_contract import validate_for_inversion
@@ -145,7 +161,10 @@ correctness, and never normalize accepted inputs.
 
 The main public validators are:
 
-- `validate_spires_data(data)` for the neutral container type.
+- `validate_spires_data(data)` for the neutral container and atomic optional
+  scene contracts.
+- `validate_inversion_exclusion(scene)` for the optional packed exclusion
+  provenance and validity-mask set.
 - `validate_for_inversion(data)` for complete full-resolution or clustered
   inversion input.
 - `validate_spatial_alignment(data)` for exact field alignment.

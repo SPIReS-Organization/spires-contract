@@ -68,9 +68,15 @@ class SpiresData:
 
 
 def validate_spires_data(data):
-    """Validate the shared container type without requiring a lifecycle stage."""
+    """Validate the shared container and optional atomic scene contracts."""
     if not isinstance(data, SpiresData):
         raise_if_violations(
             "spires_data",
             [f"data must be a SpiresData instance, got {type(data).__name__}"],
         )
+
+    # Local import avoids making the neutral exclusion validator depend on the
+    # SpiresData class while preserving a simple public validation entry point.
+    from spires_contract.inversion_exclusion import validate_inversion_exclusion
+
+    validate_inversion_exclusion(data.scene)

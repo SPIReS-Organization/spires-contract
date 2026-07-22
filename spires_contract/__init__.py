@@ -16,6 +16,10 @@ from spires_contract.alignment import (
 from spires_contract.clusters import clusters_present, validate_clusters
 from spires_contract.data import SpiresData, validate_spires_data
 from spires_contract.inversion_input import validate_for_inversion
+from spires_contract.inversion_exclusion import (
+    inversion_exclusion_metadata,
+    validate_inversion_exclusion,
+)
 from spires_contract.lut import validate_lut
 from spires_contract.results import validate_results
 
@@ -23,9 +27,11 @@ __all__ = [
     "ContractError",
     "SpiresData",
     "clusters_present",
+    "inversion_exclusion_metadata",
     "validate_coordinate_alignment",
     "validate_clusters",
     "validate_for_inversion",
+    "validate_inversion_exclusion",
     "validate_lut",
     "validate_results",
     "validate_spatial_alignment",
