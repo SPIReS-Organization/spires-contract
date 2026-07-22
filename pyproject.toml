@@ -24,7 +24,8 @@ Homepage = "https://github.com/SPIReS-Organization/spires-contract"
 Repository = "https://github.com/SPIReS-Organization/spires-contract"
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["."]
+exclude = ["tests*"]
 
 [tool.setuptools_scm]
 version_scheme = "post-release"
@@ -32,4 +33,4 @@ local_scheme = "node-and-date"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
+pythonpath = ["."]

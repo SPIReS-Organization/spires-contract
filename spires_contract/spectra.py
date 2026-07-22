@@ -1,8 +1,8 @@
 """I/O -> inversion boundary contract: target/background spectra + solar angles.
 
 Canonical forms (see conventions):
-- target/background spectra: dims (y, x, band), float32 or float64, with a `band` coordinate
-- solar angles:              dims (y, x),       float32 or float64
+- target/background spectra: dims (y, x, band), float32, with a `band` coordinate
+- solar angles:              dims (y, x),       float32
 
 Dimension ORDER is part of the contract — the C++ inversion kernel indexes
 arrays positionally, so a transposed array is as wrong as a missing dimension.
