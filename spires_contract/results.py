@@ -145,10 +145,10 @@ def _check_result_metadata(name, array):
 
     if name == "lap_concentration":
         lap_type = array.attrs.get("lap_type")
-        if lap_type != c.INITIAL_LAP_TYPE:
+        if lap_type not in c.SUPPORTED_LAP_TYPES:
             violations.append(
-                "lap_concentration attribute 'lap_type' must be "
-                f"{c.INITIAL_LAP_TYPE!r}"
+                "lap_concentration attribute 'lap_type' must be one of "
+                f"{c.SUPPORTED_LAP_TYPES!r}"
             )
     return violations
 

@@ -134,11 +134,12 @@ The four base variables share exact `(y, x)` coordinates:
 | `lap_concentration` | `float32` | `ppm` | nonnegative |
 | `grain_radius` | `float32` | `um` | nonnegative |
 
-`lap_concentration` additionally carries `lap_type="dust"`. NaNs are allowed,
-but infinities and invalid finite values are rejected. When an effective
-eligibility mask is supplied, every base result must be NaN outside that mask.
-Extra result variables are allowed so postprocessing can enrich the same
-dataset. The initial shared contract does not enforce
+`lap_concentration` additionally carries a `lap_type` from the supported set,
+which initially contains only `"dust"`. NaNs are allowed, but infinities and
+invalid finite values are rejected. When an effective eligibility mask is
+supplied, every base result must be NaN outside that mask. Extra result
+variables are allowed so postprocessing can enrich the same dataset. The
+initial shared contract does not enforce
 `fsnow + fshade <= 1`.
 
 ```python

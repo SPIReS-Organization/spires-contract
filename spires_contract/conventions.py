@@ -115,8 +115,8 @@ CLUSTER_MASK_POLICY_ATTR = "valid_inversion_mask_applied"
 
 # Canonical result metadata. Additional attributes are allowed.
 RESULT_LONG_NAMES = {
-    "fsnow": "Fractional Snow-Covered Area",
-    "fshade": "Fractional Shaded Area",
+    "fsnow": "Fractional snow endmember",
+    "fshade": "Fractional shade endmember",
     "lap_concentration": "Light-Absorbing Particle Concentration in Snow",
     "grain_radius": "Effective Snow Grain Radius",
 }
@@ -127,7 +127,7 @@ RESULT_UNITS = {
     "grain_radius": "um",
 }
 GRAIN_RADIUS_UNIT_ALIASES = ("um", "µm", "μm")
-INITIAL_LAP_TYPE = "dust"
+SUPPORTED_LAP_TYPES = ("dust",)
 
 # Canonical floating dtype for scientific data at SPIReS package boundaries.
 # Internal numerical kernels may promote values for computation, but public
