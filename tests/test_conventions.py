@@ -33,7 +33,12 @@ def test_canonical_dataset_lut_dims():
 
 
 def test_result_variables_order():
-    assert c.RESULT_VARIABLES == ("fsnow", "fshade", "lap_concentration", "grain_size")
+    assert c.RESULT_VARIABLES == (
+        "fsnow",
+        "fshade",
+        "lap_concentration",
+        "grain_radius",
+    )
 
 
 def test_accepted_dtypes_are_float32_only():

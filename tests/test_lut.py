@@ -6,7 +6,7 @@ from spires_contract import lut
 from spires_contract import conventions as c
 from spires_contract._validate import ContractError
 
-# Canonical LUT dims (band, solar_angle, lap_concentration, grain_size).
+# Legacy normalized MATLAB LUT dims retained for validate_lut().
 _DIMS = ("band", "solar_angle", "lap_concentration", "grain_size")
 _SIZES = {"band": 9, "solar_angle": 4, "lap_concentration": 3, "grain_size": 5}
 

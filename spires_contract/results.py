@@ -118,7 +118,7 @@ def _check_result_array(name, array):
     finite = values[np.isfinite(values)]
     if name in {"fsnow", "fshade"} and np.any((finite < 0) | (finite > 1)):
         violations.append(f"finite {name} values must lie within [0, 1]")
-    if name in {"lap_concentration", "grain_size"} and np.any(finite < 0):
+    if name in {"lap_concentration", "grain_radius"} and np.any(finite < 0):
         violations.append(f"finite {name} values must be nonnegative")
     return violations
 
@@ -132,11 +132,11 @@ def _check_result_metadata(name, array):
         )
 
     units = array.attrs.get("units")
-    if name == "grain_size":
-        if units not in c.GRAIN_SIZE_UNIT_ALIASES:
+    if name == "grain_radius":
+        if units not in c.GRAIN_RADIUS_UNIT_ALIASES:
             violations.append(
-                f"grain_size attribute 'units' must be one of "
-                f"{c.GRAIN_SIZE_UNIT_ALIASES!r}"
+                f"grain_radius attribute 'units' must be one of "
+                f"{c.GRAIN_RADIUS_UNIT_ALIASES!r}"
             )
     elif units != c.RESULT_UNITS[name]:
         violations.append(

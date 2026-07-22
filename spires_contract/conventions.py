@@ -51,8 +51,8 @@ LUT_AXIS_UNITS = {
     "altitude": "km",
 }
 
-# Inversion output vector, in this order, along the trailing result axis.
-RESULT_VARIABLES = ("fsnow", "fshade", "lap_concentration", "grain_size")
+# Canonical public inversion result variables, in source-vector order.
+RESULT_VARIABLES = ("fsnow", "fshade", "lap_concentration", "grain_radius")
 RESULT_DIMS = SPATIAL_DIMS
 
 # Required scene variables at the inversion boundary.
@@ -118,15 +118,15 @@ RESULT_LONG_NAMES = {
     "fsnow": "Fractional Snow-Covered Area",
     "fshade": "Fractional Shaded Area",
     "lap_concentration": "Light-Absorbing Particle Concentration in Snow",
-    "grain_size": "Effective Snow Grain Radius",
+    "grain_radius": "Effective Snow Grain Radius",
 }
 RESULT_UNITS = {
     "fsnow": "1",
     "fshade": "1",
     "lap_concentration": "ppm",
-    "grain_size": "um",
+    "grain_radius": "um",
 }
-GRAIN_SIZE_UNIT_ALIASES = ("um", "µm", "μm")
+GRAIN_RADIUS_UNIT_ALIASES = ("um", "µm", "μm")
 INITIAL_LAP_TYPE = "dust"
 
 # Canonical floating dtype for scientific data at SPIReS package boundaries.

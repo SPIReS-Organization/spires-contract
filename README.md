@@ -132,7 +132,7 @@ The four base variables share exact `(y, x)` coordinates:
 | `fsnow` | `float32` | `1` | `[0, 1]` |
 | `fshade` | `float32` | `1` | `[0, 1]` |
 | `lap_concentration` | `float32` | `ppm` | nonnegative |
-| `grain_size` | `float32` | `um` | nonnegative |
+| `grain_radius` | `float32` | `um` | nonnegative |
 
 `lap_concentration` additionally carries `lap_type="dust"`. NaNs are allowed,
 but infinities and invalid finite values are rejected. When an effective
@@ -161,6 +161,10 @@ Canonical LUTs are xarray `Dataset` objects. Reflectance LUTs contain a
 ```text
 (band, solar_angle, lap_concentration, sqrt_grain_radius)
 ```
+
+`sqrt_grain_radius` is the LUT interpolation coordinate in `um^0.5`.
+Inversion squares that optimized coordinate exactly once when constructing the
+public `grain_radius` result in `um`.
 
 Albedo LUTs contain an `albedo` variable with required dimensions:
 
