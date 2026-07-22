@@ -20,19 +20,27 @@ from spires_contract.inversion_exclusion import (
     inversion_exclusion_metadata,
     validate_inversion_exclusion,
 )
-from spires_contract.lut import validate_lut
+from spires_contract.lut import (
+    canonical_lut_unit,
+    validate_albedo_lut,
+    validate_lut,
+    validate_reflectance_lut,
+)
 from spires_contract.results import validate_results
 
 __all__ = [
     "ContractError",
     "SpiresData",
+    "canonical_lut_unit",
     "clusters_present",
     "inversion_exclusion_metadata",
     "validate_coordinate_alignment",
     "validate_clusters",
     "validate_for_inversion",
     "validate_inversion_exclusion",
+    "validate_albedo_lut",
     "validate_lut",
+    "validate_reflectance_lut",
     "validate_results",
     "validate_spatial_alignment",
     "validate_spires_data",

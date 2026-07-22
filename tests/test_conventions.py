@@ -11,7 +11,25 @@ def test_canonical_solar_angle_dims():
 
 
 def test_canonical_lut_dims():
+    # Legacy MATLAB-normalized layout retained during the transition.
     assert c.LUT_DIMS == ("band", "solar_angle", "lap_concentration", "grain_size")
+
+
+def test_canonical_dataset_lut_dims():
+    assert c.REFLECTANCE_LUT_DIMS == (
+        "band",
+        "solar_angle",
+        "lap_concentration",
+        "sqrt_grain_radius",
+    )
+    assert c.ALBEDO_LUT_REQUIRED_DIMS == (
+        "solar_zenith",
+        "illumination_angle",
+        "lap_concentration",
+        "sqrt_grain_radius",
+    )
+    assert c.ALBEDO_LUT_OPTIONAL_DIMS == ("skyview", "altitude")
+    assert c.LUT_AXIS_UNITS["altitude"] == "km"
 
 
 def test_result_variables_order():

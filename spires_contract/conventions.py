@@ -21,9 +21,35 @@ CLUSTER_DIMS = (CLUSTER_DIM,)
 CLUSTER_LABEL_DIMS = SPATIAL_DIMS
 CLUSTER_LABEL_SENTINEL = -1
 
-# Reflectance lookup table produced from Mie theory. The light-absorbing-particle
-# axis is generic because LUTs may represent dust, black carbon, or another LAP.
+# Legacy normalized MATLAB reflectance layout. Retained only while runtime
+# MATLAB LUT support remains; canonical Dataset contracts are defined below.
 LUT_DIMS = ("band", "solar_angle", "lap_concentration", "grain_size")
+
+REFLECTANCE_LUT_VARIABLE = "reflectance"
+REFLECTANCE_LUT_DIMS = (
+    "band",
+    "solar_angle",
+    "lap_concentration",
+    "sqrt_grain_radius",
+)
+ALBEDO_LUT_VARIABLE = "albedo"
+ALBEDO_LUT_REQUIRED_DIMS = (
+    "solar_zenith",
+    "illumination_angle",
+    "lap_concentration",
+    "sqrt_grain_radius",
+)
+ALBEDO_LUT_OPTIONAL_DIMS = ("skyview", "altitude")
+LUT_LAP_TYPE_ATTR = "lap_type"
+LUT_AXIS_UNITS = {
+    "solar_angle": "degrees",
+    "solar_zenith": "degrees",
+    "illumination_angle": "degrees",
+    "lap_concentration": "ppm",
+    "sqrt_grain_radius": "um^0.5",
+    "skyview": "1",
+    "altitude": "km",
+}
 
 # Inversion output vector, in this order, along the trailing result axis.
 RESULT_VARIABLES = ("fsnow", "fshade", "lap_concentration", "grain_size")

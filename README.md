@@ -153,6 +153,39 @@ validate_results(
 
 Validation never clips values into physical ranges.
 
+## Canonical lookup tables
+
+Canonical LUTs are xarray `Dataset` objects. Reflectance LUTs contain a
+`reflectance` variable with exact dimensions:
+
+```text
+(band, solar_angle, lap_concentration, sqrt_grain_radius)
+```
+
+Albedo LUTs contain an `albedo` variable with required dimensions:
+
+```text
+(solar_zenith, illumination_angle, lap_concentration, sqrt_grain_radius)
+```
+
+Optional albedo axes `skyview` and `altitude` follow the required dimensions,
+in that order when present. Canonical physical-axis units are degrees, ppm,
+`um^0.5`, dimensionless fraction, and kilometres respectively. Validators
+accept equivalent spellings such as `deg`, `um^(1/2)`, and `sqrt(um)`, but do
+not convert values; `um` is invalid for `sqrt_grain_radius`, and `m` is invalid
+for canonical kilometre altitude.
+
+The `lap_concentration` coordinate requires a non-empty `lap_type` attribute.
+Callers may supply `expected_lap_type` to require a case-insensitive match;
+otherwise the LUT attribute is authoritative. The generic `solar_angle` name
+intentionally supports either solar zenith or illumination angle supplied by
+the caller, so no angle-type attribute is required.
+
+NetCDF is the target canonical file representation. Existing MATLAB LUTs must
+be normalized explicitly by the consuming package. `validate_lut()` remains
+available only for the legacy normalized MATLAB reflectance `DataArray` and
+will be removed with MATLAB LUT support.
+
 ## Validation behavior
 
 Validators raise `ContractError` with related violations collected into one
@@ -171,7 +204,11 @@ The main public validators are:
 - `validate_clusters(data)` for complete-or-absent cluster state.
 - `validate_results(results, scene=..., eligibility_mask=...)` for canonical
   inversion output.
-- `validate_lut(lut)` for the float32 LUT boundary.
+- `validate_reflectance_lut(dataset, expected_lap_type=...)` for canonical
+  reflectance LUTs.
+- `validate_albedo_lut(dataset, expected_lap_type=...)` for canonical albedo
+  LUTs.
+- `validate_lut(lut)` only for the transitional MATLAB-normalized layout.
 
 Standalone `validate_r0()` remains deferred until the `spires-r0` package is
 implemented; background reflectance used by inversion is already validated by
@@ -184,7 +221,7 @@ implemented; background reflectance used by inversion is already validated by
 | shared lifecycle | `SpiresData` | implemented |
 | I/O → inversion | scene, background, masks, alignment | implemented |
 | clustered I/O → inversion | cluster labels, counts, representatives | implemented |
-| LUT → inversion | lookup table | implemented |
+| LUT → inversion/postprocess | canonical reflectance and albedo datasets | implemented |
 | inversion → postprocess | canonical result dataset | implemented |
 | standalone R₀ product | `validate_r0` | deferred stub |
 
