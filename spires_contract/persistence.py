@@ -339,9 +339,17 @@ def validate_persisted_metadata(metadata: PersistedProductMetadata) -> None:
     if not isinstance(metadata.package_versions, Mapping):
         violations.append("package_versions must be a mapping")
     else:
-        for required_package in ("spires-contract", "spires-io"):
-            value = metadata.package_versions.get(required_package)
+        for name, value in metadata.package_versions.items():
+            if not isinstance(name, str) or not name.strip():
+                violations.append(
+                    "package_versions keys must be nonempty strings"
+                )
             if not isinstance(value, str) or not value.strip():
+                violations.append(
+                    f"package_versions[{name!r}] must be a nonempty string"
+                )
+        for required_package in ("spires-contract", "spires-io"):
+            if required_package not in metadata.package_versions:
                 violations.append(
                     f"package_versions must include nonempty {required_package!r}"
                 )

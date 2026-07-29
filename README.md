@@ -154,6 +154,47 @@ validate_results(
 
 Validation never clips values into physical ranges.
 
+## Persisted products
+
+Schema version 1 defines the scientific identity and completion state that a
+written `SpiresData` product must carry. `spires-contract` validates this
+content; `spires-io` owns the grouped NetCDF representation, compression,
+inspection, and atomic filesystem operations.
+
+Every persisted product identifies its sensor, source product, spatial ID,
+acquisition time, optional platform, exact spatial-grid digest, creation and
+update times, and relevant package versions. The grid is self-describing
+through numeric, strictly monotonic `x` and `y` coordinates plus a scalar
+`spatial_ref` carrying CRS WKT.
+
+Two completion profiles are initially defined:
+
+| Profile | Completed stages | Required result content |
+| --- | --- | --- |
+| `inversion_raw` | `invert` | canonical base inversion results |
+| `postprocessed_raw` | `invert`, `albedo` | base results plus every declared completed postprocessing operation |
+
+The postprocessing operations recognized by schema version 1 are canopy
+correction, ice adjustment, albedo, delta-VIS, and radiative forcing. Declaring
+an operation requires its canonical derived variables, dimensions, dtype,
+units, long name, and finite-value rules.
+
+Stored payload is independent of completion profile:
+
+- `full` retains the complete inversion-ready `SpiresData`, its packed QA, and
+  its results.
+- `results_subset` retains the spatial grid, complete packed QA, and results,
+  while omitting reflectance, background, ancillary, and other scene payloads
+  that can be reopened from their authoritative sources.
+
+Both payloads are complete products. `results_subset` means a smaller stored
+representation, not an incomplete scientific stage. Persisted products always
+require the atomic packed-QA set and canonical base inversion results.
+
+The public persistence contracts are `ProductIdentity`,
+`PersistedProductMetadata`, `validate_persisted_metadata()`,
+`validate_persisted_grid()`, and `validate_persisted_data()`.
+
 ## Canonical lookup tables
 
 Canonical LUTs are xarray `Dataset` objects. Reflectance LUTs contain a
@@ -209,6 +250,10 @@ The main public validators are:
 - `validate_clusters(data)` for complete-or-absent cluster state.
 - `validate_results(results, scene=..., eligibility_mask=...)` for canonical
   inversion output.
+- `validate_persisted_metadata(metadata)` for serialized identity and
+  completion declarations.
+- `validate_persisted_data(data, metadata)` for complete `full` or
+  `results_subset` product content.
 - `validate_reflectance_lut(dataset, expected_lap_type=...)` for canonical
   reflectance LUTs.
 - `validate_albedo_lut(dataset, expected_lap_type=...)` for canonical albedo
