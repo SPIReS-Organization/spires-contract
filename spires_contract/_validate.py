@@ -96,7 +96,7 @@ def check_coords_match(
             tuple(reference_coord.dims) == tuple(candidate_coord.dims)
             and reference_coord.shape == candidate_coord.shape
             and np.dtype(reference_coord.dtype) == np.dtype(candidate_coord.dtype)
-            and reference_coord.equals(candidate_coord)
+            and np.array_equal(reference_coord.values, candidate_coord.values)
         )
         if not matches:
             violations.append(
