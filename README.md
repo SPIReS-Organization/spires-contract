@@ -277,11 +277,11 @@ implemented; background reflectance used by inversion is already validated by
 
 ## Development and release
 
-Run verification in the workspace environment:
+Run verification:
 
 ```bash
-module load miniforge
-mamba run -n spipy14 python -m pytest
+pip install -e ".[test]"
+python -m pytest
 ```
 
 Versions are derived from Git tags with `setuptools-scm`. Version `v0.4.0`
