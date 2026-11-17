@@ -73,11 +73,18 @@ from spires_contract.persistence import (
     validate_persisted_grid,
     validate_persisted_metadata,
 )
+from spires_contract.qa import (
+    CLOUD_FLAGS,
+    QA_FLAGS,
+    QA_INVALID_FLAGS,
+    validate_qa_mask,
+)
 from spires_contract.results import validate_results
 
 __all__ = [
     "ContractError",
     "ALBEDO_RESULT_VARIABLES",
+    "CLOUD_FLAGS",
     "COMPLETION_STATUS_COMPLETE",
     "CONTENT_PROFILE_INVERSION_RAW",
     "CONTENT_PROFILE_POSTPROCESSED_RAW",
@@ -119,6 +126,8 @@ __all__ = [
     "PRODUCT_CONTENTS_RESULTS_SUBSET",
     "PersistedProductMetadata",
     "ProductIdentity",
+    "QA_FLAGS",
+    "QA_INVALID_FLAGS",
     "SpiresData",
     "canonical_lut_unit",
     "clusters_present",
@@ -132,6 +141,7 @@ __all__ = [
     "validate_persisted_data",
     "validate_persisted_grid",
     "validate_persisted_metadata",
+    "validate_qa_mask",
     "validate_reflectance_lut",
     "validate_results",
     "validate_spatial_alignment",
