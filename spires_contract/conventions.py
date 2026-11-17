@@ -18,6 +18,9 @@ SOLAR_ANGLE_UNITS = "degrees"
 SOLAR_ANGLE_UNIT_ALIASES = ("degree", "degrees", "deg")
 SOLAR_ZENITH_RANGE_DEGREES = (0.0, 180.0)
 
+# Per-pixel boolean quality flags: one layer per flag, over the scene grid.
+QA_MASK_DIMS = ("flag",) + SPATIAL_DIMS
+
 # Cluster-level arrays and the excluded-pixel sentinel used by cluster labels.
 CLUSTER_DIM = "cluster"
 CLUSTER_DIMS = (CLUSTER_DIM,)

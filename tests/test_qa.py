@@ -62,3 +62,15 @@ def test_validate_qa_mask_accepts_available_attr_subset():
     da = make_qa_mask()
     da.attrs["qa_flags_available"] = "fill cloud cirrus"
     qa.validate_qa_mask(da)
+
+
+def test_validate_qa_mask_rejects_missing_flag_coord():
+    da = make_qa_mask().drop_vars("flag")
+    with pytest.raises(ContractError, match="missing coordinate for dim 'flag'"):
+        qa.validate_qa_mask(da)
+
+
+def test_validate_qa_mask_rejects_missing_xy_coord():
+    da = make_qa_mask().drop_vars("y")
+    with pytest.raises(ContractError, match="coordinate"):
+        qa.validate_qa_mask(da)

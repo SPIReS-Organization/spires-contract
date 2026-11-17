@@ -12,6 +12,14 @@ from __future__ import annotations
 import numpy as np
 import xarray as xr
 
+__all__ = [
+    "QA_FLAGS",
+    "QA_INVALID_FLAGS",
+    "CLOUD_FLAGS",
+    "validate_qa_mask",
+]
+
+from spires_contract import conventions as c
 from spires_contract._validate import check_dtype, raise_if_violations
 
 QA_FLAGS = (
@@ -26,31 +34,42 @@ QA_FLAGS = (
 )
 """Canonical flag vocabulary and the required order of the ``flag`` coordinate."""
 
-QA_INVALID_FLAGS = ("fill", "saturated", "cloud", "cirrus", "cloud_buffer", "cloud_shadow")
+QA_INVALID_FLAGS = (
+    "fill",
+    "saturated",
+    "cloud",
+    "cirrus",
+    "cloud_buffer",
+    "cloud_shadow",
+)
 """Flags that mark a pixel as not invertible. ``snow`` and ``water`` are descriptive."""
 
 CLOUD_FLAGS = ("cloud", "cirrus", "cloud_buffer", "cloud_shadow")
 """Flags that together form a cloud mask (excludes fill/saturation)."""
 
-QA_MASK_DIMS = ("flag", "y", "x")
-
 
 def validate_qa_mask(da: xr.DataArray) -> None:
     """Raise :class:`ContractError` unless ``da`` is a conforming ``qa_mask``."""
     violations = []
-    if tuple(da.dims) != QA_MASK_DIMS:
-        violations.append(f"dims are {tuple(da.dims)}, expected {QA_MASK_DIMS}")
+    if tuple(da.dims) != c.QA_MASK_DIMS:
+        violations.append(f"dims are {tuple(da.dims)}, expected {c.QA_MASK_DIMS}")
     violations += check_dtype(da, np.bool_)
-    if "flag" in da.dims:
-        flags = tuple(str(f) for f in da["flag"].values)
-        if flags != QA_FLAGS:
-            violations.append(f"flag coordinate is {flags}, expected exactly {QA_FLAGS}")
-    for dim in ("y", "x"):
+    for dim in c.QA_MASK_DIMS:
         if dim in da.dims and dim not in da.coords:
             violations.append(f"missing coordinate for dim {dim!r}")
+    # Compare the vocabulary only when the flag coordinate exists; otherwise
+    # da["flag"] falls back to positional indices and the message misleads.
+    if "flag" in da.dims and "flag" in da.coords:
+        flags = tuple(str(f) for f in da["flag"].values)
+        if flags != QA_FLAGS:
+            violations.append(
+                f"flag coordinate is {flags}, expected exactly {QA_FLAGS}"
+            )
     available = da.attrs.get("qa_flags_available")
     if available is not None:
         unknown = set(str(available).split()) - set(QA_FLAGS)
         if unknown:
-            violations.append(f"qa_flags_available names unknown flag(s) {sorted(unknown)}")
+            violations.append(
+                f"qa_flags_available names unknown flag(s) {sorted(unknown)}"
+            )
     raise_if_violations("qa_mask", violations)

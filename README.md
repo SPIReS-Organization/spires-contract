@@ -146,12 +146,11 @@ a pixel as not invertible. `CLOUD_FLAGS` is `cloud`, `cirrus`, `cloud_buffer`,
 and `cloud_shadow`, which together form a cloud mask. It excludes `fill` and
 `saturated`, so the cloud mask can be used on its own.
 
-Two optional attributes describe the producer:
-
-- `qa_flags_available`: whitespace-separated subset of the flag names that the
-  source product can express. A flag the source cannot express is all-False and
-  is omitted from this list.
-- `qa_source`: free-text name of the source QA product.
+`qa_flags_available` is an optional attribute: a whitespace-separated subset of
+the flag names that the source product can express. A flag the source cannot
+express is all-False and is omitted from this list. `qa_source` is recommended
+but not validated: a free-text name of the source QA product, such as
+`QA_PIXEL`, `Fmask`, or `SCL`.
 
 ```python
 from spires_contract import validate_qa_mask
